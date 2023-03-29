@@ -1,0 +1,4 @@
+echo "Hello World !"
+echo "Lessgo !"
+echo "NITK is a good college" >college.txt
+echo "OKAY, BYE" >> college.txt
