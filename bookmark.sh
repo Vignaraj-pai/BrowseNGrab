@@ -1,5 +1,5 @@
 
-cat "# Bookmarks" > Bookmarks.md
+echo "# Bookmarks" |cat > Bookmarks.md
 search=$1
 chrome()
 {
