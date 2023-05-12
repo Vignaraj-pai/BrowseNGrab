@@ -1,7 +1,7 @@
 # BrowseNGrab
 BrowseNGrab is a bash script that consolidates bookmarks from all browsers on the system into one place, which can be exported to other browsers. The script is currently in development and further plans include creating a model to categorize the bookmarks into different folders.
 
-### To use BrwoseNGrab, follow these steps:
+### To use BrowseNGrab, follow these steps:
 
 Clone the repository: git clone https://github.com/username/bookmark-consolidator.git
 Change directory into the repository: cd bookmark-consolidator
