@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Create the systemd service unit file
+SERVICE_FILE="/lib/systemd/system/connect_service.service"
+SERVICE_CONTENT="[Unit]
+Description=Connect Service
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/connect_service.sh
+
+[Install]
+WantedBy=default.target"
+
+echo "$SERVICE_CONTENT" > "$SERVICE_FILE"
+
+# Set the correct permissions for the service file
+chmod 644 "$SERVICE_FILE"
+
+# Enable and start the connect_service systemd unit
+systemctl enable connect_service.service
+systemctl start connect_service.service
+
+chmod +x /usr/bin/connect_nitk.sh
+
+exit 0
