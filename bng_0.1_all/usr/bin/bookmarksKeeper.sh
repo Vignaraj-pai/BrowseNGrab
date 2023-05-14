@@ -1,30 +1,124 @@
 #!/bin/bash
 
+function connect_nitk() {
+	wifi_stat=$(nmcli radio wifi)
 
-# Google Chrome
-function chromeBookmarks() {
+	wifi_nm="NITK-NET"
+	wifi_pwd="2K16NITK"
 
-	# Check whether google-chrome/Default folder exists in ~/.config folder or not
-	if [ -d "${HOME}/.config/google-chrome" -a -d "${HOME}/.config/google-chrome/Default" ]; then
-		file_path=$(find "${HOME}/.config/google-chrome/Default" -iname "Bookmarks")
-		browserlist+=("--chrome")
-		# if the file does not exists then there are no bookmarks
-		if [ -z "$file_path" ]; then
-			echo "Currently there are no bookmarks for Google Chrome" >&2
-			return
-		else
-			echo -e "## Google Chrome\n" >>  "${location}/bookmarks.md"
-		
-			echo "---" >> "${location}/bookmarks.md"
-			contents=$(cat "${file_path}")
-			contents=$(echo "$contents" | grep -w "\"url\":" | tr -s " " " " | cut -d " " -f3 )
-			contents=$(echo "$contents" | awk '{print "-",$0}' | sed 's/\"//g')
-			echo "$contents" >> "${location}/bookmarks.md"
-			echo -e "\n" >> "${location}/bookmarks.md"
-		fi
-	else
-		echo "Google Chrome not found for ${USER} user" >&2
+	URL="https://nac.nitk.ac.in:8090/login.xml"
+
+	file_path="$HOME/.config/browsengrab/nitk/login.txt"
+
+
+	# Create the directory if it doesn't exist
+	mkdir -p "$(dirname "$file_path")"
+
+	# if -u flag is present then ask for updation of credentials
+	if [ "$1" == "-c" ]; then
+		echo "Update credentials"
+		chmod +w "$file_path"
+		echo "Enter username: "
+		read -r USERNAME
+		echo "Enter password: "
+		read -r -s PASSWORD
+		# Store username and password in login.txt
+		echo "$USERNAME" > "$file_path"
+		echo "$PASSWORD" >> "$file_path"
+		chmod -x -w "$file_path"
+		exit 1
 	fi
+
+	if [ "$1" == '-s' ]; then
+		echo "Status of connection"
+		# check if connected to NITK-NET
+		if [ $(nmcli device wifi | grep -c "$wifi_nm") -eq 1 ]
+		then
+			echo "Connected to NITK-NET"
+			if [ "$(nmcli -g connectivity general status)" == "portal" ]
+			then
+			echo "Not logged in"
+			exit 1
+			fi
+			if [ "$(nmcli -g connectivity general status)" == "full" ]
+			then 
+			echo "Logged in and connected to the internet"
+			exit 1
+			fi
+		else
+			echo "Not connected to NITK-NET"
+			exit 1
+		fi
+	fi
+
+	# If login.txt exists, then read username and password from it
+	if [ -f "$file_path" ]; then
+		USERNAME=$(sed -n 1p "$file_path")
+		PASSWORD=$(sed -n 2p "$file_path")
+	else
+		echo "Enter username: "
+		read -r USERNAME
+		echo "Enter password: "
+		read -r -s PASSWORD
+		# Store username and password in login.txt
+		echo "$USERNAME" > "$file_path"
+		echo "$PASSWORD" >> "$file_path"
+		chmod -x -w "$file_path"
+	fi
+
+	if [ $wifi_stat == "disabled" ]
+	then
+		curl --data "mode=191&username=${USERNAME}&password=${PASSWORD}&a=1683446146445&producttype=0" $URL 
+
+		if [ "$(nmcli -g connectivity general status)" == "full" ]
+		then
+			exit 1
+		fi
+
+	else 
+		# connect to NITK-NET
+		if [ -z $(nmcli device wifi | grep -c "$wifi_nm") ]
+		then
+			echo "Connecting to NITK-NET"
+			nmcli device wifi connect $wifi_nm password $wifi_pwd
+			until [ "$(nmcli -g connectivity general status)" == "full" ]
+		do
+			curl --data "mode=191&username=${USERNAME}&password=${PASSWORD}&a=1683446146445&producttype=0" $URL
+			sleep 1
+		done
+		else
+			echo "NITK-NET not found"
+			exit 1
+		fi    
+	fi
+	}
+
+
+
+	# Google Chrome
+	function chromeBookmarks() {
+
+		# Check whether google-chrome/Default folder exists in ~/.config folder or not
+		if [ -d "${HOME}/.config/google-chrome" -a -d "${HOME}/.config/google-chrome/Default" ]; then
+			file_path=$(find "${HOME}/.config/google-chrome/Default" -iname "Bookmarks")
+			browserlist+=("--chrome")
+			# if the file does not exists then there are no bookmarks
+			if [ -z "$file_path" ]; then
+				echo "Currently there are no bookmarks for Google Chrome" >&2
+				return
+			else
+				echo -e "## Google Chrome\n" >>  "${location}/bookmarks.md"
+			
+				echo "---" >> "${location}/bookmarks.md"
+				contents=$(cat "${file_path}")
+				contents=$(echo "$contents" | grep -w "\"url\":" | tr -s " " " " | cut -d " " -f3 )
+				contents=$(echo "$contents" | awk '{print "-",$0}' | sed 's/\"//g')
+				echo "$contents" >> "${location}/bookmarks.md"
+				echo -e "\n" >> "${location}/bookmarks.md"
+			fi
+		else
+			echo "Google Chrome not found for ${USER} user" >&2
+		fi
 }	
 
 # Mozilla Firefox
@@ -281,19 +375,19 @@ while [[ $# -gt 0 ]]; do
         -n | --nitk)
 			case $2 in
 				-s | --status)
-					./usr/bin/connect_nitk.sh -s
+					connect_nitk "-s"
 					exit 0
 					;;
 				-c | --change)
-					./usr/bin/connect_nitk.sh -c
+					connect_nitk "-c"
 					exit 0
 					;;
 				-lo | --logout)
-					./usr/bin/connect_nitk.sh -lo
+					connect_nitk "-l"
 					exit 0
 					;;
 				*)	
-					bash -c './usr/bin/connect_nitk.sh'
+					connect_nitk
 					exit 0
 					;;
 			esac
