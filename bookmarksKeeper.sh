@@ -285,6 +285,15 @@ fi
 
 # Handle bookmark collection for all browsers
 handle_bookmark_collection() {
+	if [ "$1" == "-f" ]
+    	then
+    		if [ -e "$2" ]
+    		then
+    			location=$2
+    		else
+    			echo "Path provided is invalid. Bookmarks will be stored at ${location}"
+    		fi
+    	fi
 	# Delete bookmarks.md if it exists
 	[ -f "${location}/bookmarks.md" ] && rm "${location}/bookmarks.md"
 	# Delete bookmarks.html if it exists
@@ -304,6 +313,15 @@ handle_bookmark_collection() {
 # Handle specific browser bookmark collection
 handle_browser_bookmark_collection() {
     browser=$1
+    	if [ "$2" == "-f" ]
+    	then
+    		if [ -e "$3" ]
+    		then
+    			location=$3
+    		else
+    			echo "Path provided is invalid. Bookmarks will be stored at ${location}"
+    		fi
+    	fi
 	# Delete bookmarks.md if it exists
 	[ -f "${location}/bookmarks.md" ] && rm "${location}/bookmarks.md"
 	# Delete bookmarks.html if it exists
@@ -355,25 +373,25 @@ while [[ $# -gt 0 ]]; do
             exit 0
             ;;
         -b | --bookmark)
-            handle_bookmark_collection
+            handle_bookmark_collection "$2" "$3"
             ;;
         -ch | --chrome)
-            handle_browser_bookmark_collection "chrome" 
+            handle_browser_bookmark_collection "chrome" "$2" "$3"
             ;;
         -br | --brave)
-            handle_browser_bookmark_collection "brave" 
+            handle_browser_bookmark_collection "brave" "$2" "$3"
             ;;
         -cr | --chromium)
-            handle_browser_bookmark_collection "chromium" 
+            handle_browser_bookmark_collection "chromium" "$2" "$3"
             ;;
         -e | --edge)
-            handle_browser_bookmark_collection "edge"
+            handle_browser_bookmark_collection "edge" "$2" "$3"
             ;;
         -o | --opera)
-            handle_browser_bookmark_collection "opera" 
+            handle_browser_bookmark_collection "opera" "$2" "$3"
             ;;
-        -f | --firefox)
-            handle_browser_bookmark_collection "firefox" 
+        -ff | --firefox)
+            handle_browser_bookmark_collection "firefox" "$2" "$3"
             ;;
         -n | --nitk)
 			case $2 in
