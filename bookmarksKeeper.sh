@@ -32,15 +32,15 @@ function connect_nitk() {
 	if [ "$1" == '-s' ]; then
 		echo "Status of connection"
 		# check if connected to NITK-NET
-		if [ $(nmcli device wifi | grep -c "$wifi_nm") -eq 1 ]
+		if [ $(nmcli device wifi | grep -c "$wifi_nm") -eq 1 ];
 		then
 			echo "Connected to NITK-NET"
-			if [ "$(nmcli -g connectivity general status)" == "portal" ]
+			if [ "$(nmcli -g connectivity general status)" == "portal" ];
 			then
 			echo "Not logged in"
 			exit 1
 			fi
-			if [ "$(nmcli -g connectivity general status)" == "full" ]
+			if [ "$(nmcli -g connectivity general status)" == "full" ];
 			then 
 			echo "Logged in and connected to the internet"
 			exit 1
@@ -66,31 +66,34 @@ function connect_nitk() {
 		chmod -x -w "$file_path"
 	fi
 
-	if [ $wifi_stat == "disabled" ]
-	then
-		curl --data "mode=191&username=${USERNAME}&password=${PASSWORD}&a=1683446146445&producttype=0" $URL 
-
-		if [ "$(nmcli -g connectivity general status)" == "full" ]
-		then
-			exit 1
-		fi
-
-	else 
-		# connect to NITK-NET
-		if [ -z $(nmcli device wifi | grep -c "$wifi_nm") ]
-		then
-			echo "Connecting to NITK-NET"
-			nmcli device wifi connect $wifi_nm password $wifi_pwd
-			until [ "$(nmcli -g connectivity general status)" == "full" ]
+	# turning on wifi if it isnt 
+	if [ $wifi_stat == "disabled" ];
+	then	
+		nmcli radio wifi on
+		until [ $(nmcli radio wifi) == "enabled" ];
 		do
-			curl --data "mode=191&username=${USERNAME}&password=${PASSWORD}&a=1683446146445&producttype=0" $URL
-			sleep 1
+			sleep 3s
 		done
-		else
-			echo "NITK-NET not found"
-			exit 1
-		fi    
 	fi
+	
+	sleep 5s # since it takes some time for the networks to show up
+	
+	# connect to NITK-NET
+	if [ $(nmcli device wifi | grep -c "$wifi_nm") -gt 0 ];
+	then
+		echo "Connecting to NITK-NET"
+		nmcli device wifi connect $wifi_nm password $wifi_pwd
+		until [ "$(nmcli -g connectivity general status)" == "portal" -o "$(nmcli -g connectivity general status)" == "full" ];
+    	do
+        	sleep 2s
+    	done
+		curl --data "mode=191&username=${USERNAME}&password=${PASSWORD}&a=1683446146445&producttype=0" $URL
+		sleep 1
+	else
+		echo "NITK-NET not found"
+		exit 1
+	fi    
+	
 	}
 
 
