@@ -1,8 +1,0 @@
-Package: bng
-Version: 1.0
-Architecture: all
-Essential: no
-Priority: optional
-Depends: python3
-Maintainer: Vignaraj
-Description: BNG(BrowseNGrab) is a tool for collecting all bookmarks from all browsers in a system and merge them into a single file, it also has a feature to connect to NITK-NET automatically
