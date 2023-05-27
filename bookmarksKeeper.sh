@@ -269,7 +269,7 @@ print_usage() {
     echo "  -cr, --chromium           Collect all bookmarks from Chromium browser"
     echo "  -e, --edge                Collect all bookmarks from Microsoft Edge browser"
     echo "  -o, --opera               Collect all bookmarks from Opera browser"
-    echo "  -f, --firefox             Collect all bookmarks from Firefox browser"
+    echo "  -ff, --firefox             Collect all bookmarks from Firefox browser"
 	echo "  -n, --nitk 			      login to NITK-NET"
 	echo "  -n -s, --nitk --status          Display NITK-NET login status"
 	echo "  -n -lo, --nitk --logout          Logout from NITK-NET"
